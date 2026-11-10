@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>GlucoGuide | Diabetes Screening</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<header class="topbar">
+    <a class="brand" href="/">
+        <span class="brand-mark">+</span>
+        <span>Gluco<span class="brand-light">Guide</span></span>
+    </a>
+
+    <div class="top-note">
+        <span class="live-dot"></span>
+        ML-powered screening demo
+    </div>
+</header>
+
+
+<main class="layout">
+
+    <!-- LEFT INTRODUCTION SECTION -->
+    <section class="intro">
+
+        <div class="eyebrow">
+            HEALTH INSIGHTS · MACHINE LEARNING
+        </div>
+
+        <h1>
+            A clearer picture<br>
+            of your <span>health.</span>
+        </h1>
+
+        <p>
+            Enter your health measurements below to receive a
+            machine-learning-based diabetes screening result.
+        </p>
+
+        <div class="intro-card">
+            <div class="pulse-icon">✚</div>
+
+            <div>
+                <strong>Know your numbers</strong>
+                <small>Complete all measurements for a result.</small>
+            </div>
+        </div>
+
+        <div class="mini-stats">
+
+            <div>
+                <strong>08</strong>
+                <span>Input fields</span>
+            </div>
+
+            <div>
+                <strong>02</strong>
+                <span>Output classes</span>
+            </div>
+
+            <div>
+                <strong>RF</strong>
+                <span>ML model</span>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- FORM SECTION -->
+    <section class="form-panel">
+
+        <div class="panel-heading">
+
+            <div>
+                <span class="step-label">PATIENT DETAILS</span>
+                <h2>Screening assessment</h2>
+            </div>
+
+            <span class="form-tag">01 / 01</span>
+
+        </div>
+
+
+        {% if error %}
+            <div class="error-box">
+                {{ error }}
+            </div>
+        {% endif %}
+
+
+        <form action="{{ url_for('predict') }}" method="POST">
+
+            <!-- BASIC INFORMATION -->
+            <div class="section-title">
+                <span>01</span>
+                Basic information
+            </div>
+
+            <div class="form-grid">
+
+                {% for key, label, kind in fields[:2] %}
+
+                <div class="field">
+
+                    <label for="{{ key }}">
+                        {{ label }}
+                    </label>
+
+                    <input
+                        id="{{ key }}"
+                        name="{{ key }}"
+                        type="number"
+
+                        {% if key == "AGE" %}
+                            min="1"
+                            max="120"
+                            step="1"
+                            placeholder="Enter your age"
+
+                        {% else %}
+                            min="0"
+                            max="20"
+                            step="1"
+                            placeholder="Enter number of pregnancies"
+                        {% endif %}
+
+                        value="{{ form_data.get(key, '') }}"
+                        required
+                    >
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- CLINICAL MEASUREMENTS -->
+            <div class="section-title section-gap">
+
+                <span>02</span>
+                Clinical measurements
+
+                <small>Enter values from your health records.</small>
+
+            </div>
+
+
+            <div class="form-grid">
+
+                {% for key, label, kind in fields[2:] %}
+
+                <div class="field">
+
+                    <label for="{{ key }}">
+                        {{ label }}
+                    </label>
+
+                    <input
+                        id="{{ key }}"
+                        name="{{ key }}"
+                        type="number"
+                        min="0"
+                        step="any"
+                        placeholder="Enter {{ label|lower }}"
+                        value="{{ form_data.get(key, '') }}"
+                        required
+                    >
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- SUBMIT BUTTON -->
+            <button class="submit-btn" type="submit">
+
+                Generate screening result
+
+                <span>→</span>
+
+            </button>
+
+            <p class="privacy-note">
+                ↳ Your entries are used only to generate this demonstration prediction.
+            </p>
+
+        </form>
+
+
+        <!-- PREDICTION RESULT -->
+        {% if result %}
+
+        <div class="result-card {{ result.status }}">
+
+            <div class="result-top">
+
+                <span class="result-kicker">
+                    MODEL OUTPUT
+                </span>
+
+                <span class="result-badge">
+                    {{ result.code }}
+                </span>
+
+            </div>
+
+
+            <h3>{{ result.title }}</h3>
+
+            <p class="confidence">
+                Model confidence:
+                <strong>{{ result.confidence }}%</strong>
+            </p>
+
+
+            <div class="prob-list">
+
+                {% for item in result.probabilities %}
+
+                <div class="prob-row">
+
+                    <div>
+                        <span>{{ item.label }}</span>
+                        <strong>{{ item.value }}%</strong>
+                    </div>
+
+                    <div class="track">
+                        <i style="width: {{ item.value }}%"></i>
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <p class="disclaimer">
+                This is an educational screening result, not a medical diagnosis.
+                Model confidence is not the probability that a person has diabetes.
+                Consult a qualified healthcare professional for appropriate testing
+                and interpretation.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</main>
+
+
+<footer>
+
+    <span>GlucoGuide · Diabetes Prediction System</span>
+
+    <span>Built with Flask &amp; Random Forest</span>
+
+</footer>
+
+
+</body>
+</html>
